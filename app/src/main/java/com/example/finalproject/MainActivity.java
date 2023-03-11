@@ -26,6 +26,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.finalproject.databinding.ActivityMainBinding;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 /**
  * The WhoWroteIt app queries the Book Search API for books based
  * on a user's search.  It uses an AsyncTask to run the search task in
@@ -70,12 +77,25 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // If the network is available, connected, and the search field
-        // is not empty, start a FetchBook AsyncTask.
+        // is not empty, start a CompletableFuture.
         if (networkInfo != null && networkInfo.isConnected()
                 && queryString.length() != 0) {
-            new FetchBook(binding.titleText, binding.authorText).execute(queryString);
+//            new FetchBook(binding.titleText, binding.authorText).execute(queryString);
+            // Use the getBookInfo() method in the NetworkUtils class to make
+            // the connection in the background.
+            CompletableFuture<String> future = CompletableFuture.supplyAsync(
+                    ()-> NetworkUtils.getBookInfo(queryString));
             binding.authorText.setText("");
             binding.titleText.setText(R.string.loading);
+            /*
+             * @return Returns the JSON string from the Books API, or
+             * null if the connection failed.
+             */
+            String json = null;
+            try {
+                json = future.get();
+            } catch (ExecutionException | InterruptedException ignored) {}
+            onPostExecute(json);
         }
         // Otherwise update the TextView to tell the user there is no
         // connection, or no search term.
@@ -88,5 +108,67 @@ public class MainActivity extends AppCompatActivity {
                 binding.titleText.setText(R.string.no_network);
             }
         }
+    }
+
+    /**
+     * Handles the results on the UI thread. Gets the information from
+     * the JSON result and updates the views.
+     *
+     * @param s Result from the doInBackground() method containing the raw
+     *          JSON response, or null if it failed.
+     */
+    protected void onPostExecute(String s) {
+//        super.onPostExecute(s);
+
+        try {
+            // Convert the response into a JSON object.
+            JSONObject jsonObject = new JSONObject(s);
+            // Get the JSONArray of book items.
+            JSONArray itemsArray = jsonObject.getJSONArray("items");
+
+            // Initialize iterator and results fields.
+            int i = 0;
+            String title = null;
+            String authors = null;
+
+            // Look for results in the items array, exiting when both the
+            // title and author are found or when all items have been checked.
+            while (i < itemsArray.length() &&
+                    (authors == null && title == null)) {
+                // Get the current item information.
+                JSONObject book = itemsArray.getJSONObject(i);
+                JSONObject volumeInfo = book.getJSONObject("volumeInfo");
+
+                // Try to get the author and title from the current item,
+                // catch if either field is empty and move on.
+                try {
+                    title = volumeInfo.getString("title");
+                    authors = volumeInfo.getString("authors");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                // Move to the next item.
+                i++;
+            }
+
+            // If both are found, display the result.
+            if (title != null && authors != null) {
+                binding.titleText.setText(title);
+                binding.authorText.setText(authors);
+            } else {
+                // If none are found, update the UI to show failed results.
+                binding.titleText.setText(R.string.no_results);
+                binding.authorText.setText("");
+            }
+
+        } catch (Exception e) {
+            // If onPostExecute() does not receive a proper JSON string,
+            // update the UI to show failed results.
+            binding.titleText.setText(R.string.no_results);
+            binding.authorText.setText("");
+            e.printStackTrace();
+        }
+
     }
 }
