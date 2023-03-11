@@ -41,7 +41,8 @@
         android:inputType="text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/instructions"/>
+        app:layout_constraintTop_toBottomOf="@+id/instructions"
+        android:importantForAutofill="no" />
 
     <Button
         android:id="@+id/searchButton"
