@@ -21,8 +21,6 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -35,10 +33,6 @@ import com.example.finalproject.databinding.ActivityMainBinding;
  */
 public class MainActivity extends AppCompatActivity {
 
-    // Variables for the search input field and results TextViews.
-    private EditText mBookInput;
-    private TextView mTitleText;
-    private TextView mAuthorText;
     private ActivityMainBinding binding;
 
     @Override
@@ -47,9 +41,6 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        mBookInput = binding.bookInput;
-        mTitleText = binding.titleText;
-        mAuthorText = binding.authorText;
     }
 
     /**
@@ -59,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void searchBooks(View view) {
         // Get the search string from the input field.
-        String queryString = mBookInput.getText().toString();
+        String queryString = binding.bookInput.getText().toString();
 
         // Hide the keyboard when the button is pushed.
         InputMethodManager inputManager = (InputMethodManager)
@@ -81,19 +72,19 @@ public class MainActivity extends AppCompatActivity {
         // is not empty, start a FetchBook AsyncTask.
         if (networkInfo != null && networkInfo.isConnected()
                 && queryString.length() != 0) {
-            new FetchBook(mTitleText, mAuthorText).execute(queryString);
-            mAuthorText.setText("");
-            mTitleText.setText(R.string.loading);
+            new FetchBook(binding.titleText, binding.authorText).execute(queryString);
+            binding.authorText.setText("");
+            binding.titleText.setText(R.string.loading);
         }
         // Otherwise update the TextView to tell the user there is no
         // connection, or no search term.
         else {
             if (queryString.length() == 0) {
-                mAuthorText.setText("");
-                mTitleText.setText(R.string.no_search_term);
+                binding.authorText.setText("");
+                binding.titleText.setText(R.string.no_search_term);
             } else {
-                mAuthorText.setText("");
-                mTitleText.setText(R.string.no_network);
+                binding.authorText.setText("");
+                binding.titleText.setText(R.string.no_network);
             }
         }
     }
