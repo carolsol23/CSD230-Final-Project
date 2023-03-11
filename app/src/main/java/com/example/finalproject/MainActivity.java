@@ -26,6 +26,8 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.finalproject.databinding.ActivityMainBinding;
+
 /**
  * The WhoWroteIt app queries the Book Search API for books based
  * on a user's search.  It uses an AsyncTask to run the search task in
@@ -37,15 +39,17 @@ public class MainActivity extends AppCompatActivity {
     private EditText mBookInput;
     private TextView mTitleText;
     private TextView mAuthorText;
+    private ActivityMainBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        mBookInput = findViewById(R.id.bookInput);
-        mTitleText = findViewById(R.id.titleText);
-        mAuthorText = findViewById(R.id.authorText);
+        mBookInput = binding.bookInput;
+        mTitleText = binding.titleText;
+        mAuthorText = binding.authorText;
     }
 
     /**
